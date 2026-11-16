@@ -1,0 +1,190 @@
+
+/* =====================================
+   CHAWIN PORTFOLIO
+   JavaScript Interactive Effects
+===================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // 1. แสดงปีปัจจุบันใน Footer
+    const year = document.getElementById("year");
+
+    if (year) {
+        year.textContent = new Date().getFullYear();
+    }
+
+
+    // 2. เมนูนำทาง
+    const navLinks = document.querySelectorAll("nav a");
+
+    navLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            navLinks.forEach(item => {
+                item.classList.remove("active");
+            });
+
+            link.classList.add("active");
+        });
+    });
+
+
+    // 3. ตรวจจับ Section ที่กำลังแสดง
+    const sections = document.querySelectorAll("section[id]");
+
+    if ("IntersectionObserver" in window) {
+
+        const sectionObserver = new IntersectionObserver(entries => {
+
+            entries.forEach(entry => {
+
+                if (entry.isIntersecting) {
+
+                    navLinks.forEach(link => {
+
+                        link.classList.remove("active");
+
+                        if (
+                            link.getAttribute("href") ===
+                            "#" + entry.target.id
+                        ) {
+                            link.classList.add("active");
+                        }
+
+                    });
+
+                }
+
+            });
+
+        }, {
+            threshold: 0.4
+        });
+
+        sections.forEach(section => {
+            sectionObserver.observe(section);
+        });
+    }
+
+
+    // 4. Animation เมื่อเลื่อนหน้าจอ
+    const animatedElements = document.querySelectorAll(
+        ".card, .gallery-item, .edu, .section-title"
+    );
+
+    const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if ("IntersectionObserver" in window && !reduceMotion) {
+
+        animatedElements.forEach(element => {
+            element.style.opacity = "0";
+            element.style.transform = "translateY(30px)";
+            element.style.transition =
+                "opacity .7s ease, transform .7s ease";
+        });
+
+        const animationObserver = new IntersectionObserver(entries => {
+
+            entries.forEach(entry => {
+
+                if (entry.isIntersecting) {
+
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform = "translateY(0)";
+
+                    animationObserver.unobserve(entry.target);
+                }
+
+            });
+
+        }, {
+            threshold: 0.15
+        });
+
+        animatedElements.forEach(element => {
+            animationObserver.observe(element);
+        });
+    }
+
+
+    // 5. ปุ่มกลับขึ้นด้านบน
+    const backToTop = document.createElement("button");
+
+    backToTop.innerHTML = "↑";
+    backToTop.setAttribute("aria-label", "กลับขึ้นด้านบน");
+
+    backToTop.style.cssText = `
+        position: fixed;
+        right: 25px;
+        bottom: 25px;
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 50%;
+        background: linear-gradient(135deg,#087eae,#42d5df);
+        color: #002b45;
+        font-size: 27px;
+        font-weight: bold;
+        cursor: pointer;
+        display: none;
+        z-index: 999;
+        box-shadow: 0 5px 20px rgba(0,0,0,.3);
+    `;
+
+    document.body.appendChild(backToTop);
+
+    window.addEventListener("scroll", () => {
+
+        backToTop.style.display =
+            window.scrollY > 400 ? "block" : "none";
+
+    }, { passive: true });
+
+    backToTop.addEventListener("click", () => {
+
+        window.scrollTo({
+            top: 0,
+            behavior: reduceMotion ? "instant" : "smooth"
+        });
+
+    });
+
+
+    // 6. เอฟเฟกต์ภาพกิจกรรม
+    const galleryImages = document.querySelectorAll(
+        ".gallery-item img"
+    );
+
+    galleryImages.forEach(image => {
+
+        image.addEventListener("error", () => {
+            image.alt = "ไม่สามารถโหลดรูปภาพได้";
+        });
+
+    });
+
+
+    // 7. ป้องกันลิงก์ภายในเว็บกระโดดผิดตำแหน่ง
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+
+        link.addEventListener("click", event => {
+
+            const target = document.querySelector(
+                link.getAttribute("href")
+            );
+
+            if (target) {
+                event.preventDefault();
+
+                target.scrollIntoView({
+                    behavior: reduceMotion ? "instant" : "smooth",
+                    block: "start"
+                });
+            }
+
+        });
+
+    });
+
+});
